@@ -15,37 +15,34 @@ import time
 import sys
 
 import yaml
-
+import os
+import discord
+import datetime
 
 cat = """
-                                                _
-                                                \`*-.
-                                                 )  _`-.
-                                                .  : `. .
-                                                : _   '  \\
-                                                ; *` _.   `*-._
-                                                `-.-'          `-.
-                                                  ;       `       `.
-                                                  :.       .        \\
-                                                  . \  .   :   .-'   .
-                                                  '  `+.;  ;  '      :
-                                                  :  '  |    ;       ;-.
-                                                  ; '   : :`-:     _.`* ;
-                                               .*' /  .*' ; .*`- +'  `*'
-                                               `*-*   `*-*  `*-*'
-=========================================================================
-========== 💰 Have I helped you in any way? All I ask is a tip! 🧾 ======
-========== ✨ Faça sua boa ação de hoje, manda aquela gorjeta! 😊 =======
-=========================================================================
-======================== vvv BCOIN BUSD BNB vvv =========================
-============== 0xbd06182D8360FB7AC1B05e871e56c76372510dDf ===============
-=========================================================================
-===== https://www.paypal.com/donate?hosted_button_id=JVYSC6ZYCNQQQ ======
-=========================================================================
+            ████████████                             
+        ████░░░░░░░░░░░░████                        
+      ██░░░░▒▒▒▒▒▒▒▒▒▒▒▒░░░░██                   
+    ██░░░░▒▒░░░░░░░░░░░░▒▒░░░░██               
+    ██░░▒▒░░░░      ░░░░░░  ░░██                
+  ██░░▒▒░░░░░░  ░░░░▒▒░░░░░░  ░░██           
+  ██░░▒▒░░      ░░░░░░  ░░░░  ░░██           
+  ██░░▒▒░░  ░░░░░░░░░░░░▒▒░░  ░░██           
+  ██░░▒▒░░  ░░░░░░░░░░░░▒▒░░  ░░██            
+  ██░░▒▒░░░░▒▒░░░░░░▒▒▒▒▒▒░░  ░░██           
+  ██░░▒▒░░░░░░  ░░░░▒▒░░░░░░  ░░██            
+    ██░░▒▒░░░░░░▒▒▒▒▒▒░░░░  ░░██               
+    ██░░░░  ░░░░░░░░░░░░  ░░░░██               
+      ██░░░░            ░░░░██                   
+        ████░░░░░░░░░░░░████                       
+            ████████████                            
+   นโม กรงหนอ เหรียญหนอ โชคหนอ จงมา สาธุ
 
->>---> Press ctrl + c to kill the bot.
+      หิวข้าวจังเลยจั๊ฟ Donate ให้น่อยจั๊ฟ
 
->>---> Some configs can be found in the config.yaml file."""
+>>---> กด ctrl + c ยกเลิกบอท.
+
+>>---> สามารถแก้ไขการตั้งค่าได้ที่ config.yaml."""
 
 
 print(cat)
@@ -60,7 +57,7 @@ ct = c['threshold']
 ch = c['home']
 
 if not ch['enable']:
-    print('>>---> Home feature not enabled')
+    print('>>---> Home feature ไม่ได้เปิดใช้งาน')
 print('\n')
 
 pause = c['time_intervals']['interval_between_moviments']
@@ -113,9 +110,30 @@ def loadHeroesToSendHome():
         path = './targets/heroes-to-send-home/' + file
         heroes.append(cv2.imread(path))
 
-    print('>>---> %d heroes that should be sent home loaded' % len(heroes))
+    print('>>---> %d ฮีโร่จะถูกส่งไปบ้าน' % len(heroes))
     return heroes
 
+def sendStashToDiscord():
+
+    logger('📸 กำลังดำเนินการเก็บภาพ')
+    if(c["discord_webhook"]):
+        if clickBtn(images['stash']):
+            time.sleep(2)
+
+            q = datetime.datetime.now()
+            d = q.strftime("%d_%m_%Y_%H_%M")
+            image_file = os.path.join('screenshots', d +'.png')
+            pic = pyautogui.screenshot(image_file)
+
+            time.sleep(1)
+            webhook = discord.Webhook.from_url(c["discord_webhook"], adapter=discord.RequestsWebhookAdapter())
+            logger('📨 ส่งไปยัง Discord ของท่าน')
+            webhook.send(file=discord.File(image_file))
+
+            clickBtn(images['x'])
+    else:
+        logger('📸 ไม่พบ discord webhook ข้ามขั้นตอนนี้')
+        
 if ch['enable']:
     home_heroes = loadHeroesToSendHome()
 
@@ -240,7 +258,7 @@ def clickButtons():
         hero_clicks = hero_clicks + 1
         #cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
         if hero_clicks > 20:
-            logger('too many hero clicks, try to increase the go_to_work_btn threshold')
+            logger('คลิกเยอะกินไป, กรุณาไปเพิ่มค่าใน go_to_work_btn threshold')
             return
     return len(buttons)
 
@@ -270,9 +288,9 @@ def clickGreenBarButtons():
     offset = 130
 
     green_bars = positions(images['green-bar'], threshold=ct['green_bar'])
-    logger('🟩 %d green bars detected' % len(green_bars))
+    logger('🟩 %d ฮีโร่ที่สเตมิน่าเขียว' % len(green_bars))
     buttons = positions(images['go-work'], threshold=ct['go_to_work_btn'])
-    logger('🆗 %d buttons detected' % len(buttons))
+    logger('🆗 %d ปุ่มที่สามารถกด' % len(buttons))
 
 
     not_working_green_bars = []
@@ -280,8 +298,8 @@ def clickGreenBarButtons():
         if not isWorking(bar, buttons):
             not_working_green_bars.append(bar)
     if len(not_working_green_bars) > 0:
-        logger('🆗 %d buttons with green bar detected' % len(not_working_green_bars))
-        logger('👆 Clicking in %d heroes' % len(not_working_green_bars))
+        logger('🆗 %d ปุ่มที่สามารถกด และ ฮีโร่ที่สเตมิน่าเขียว ถูกพบ' % len(not_working_green_bars))
+        logger('👆 กำลังคลิกพาไปทำงาน %d ฮีโร่' % len(not_working_green_bars))
 
     # se tiver botao com y maior que bar y-10 e menor que y+10
     for (x, y, w, h) in not_working_green_bars:
@@ -291,7 +309,7 @@ def clickGreenBarButtons():
         global hero_clicks
         hero_clicks = hero_clicks + 1
         if hero_clicks > 20:
-            logger('⚠️ Too many hero clicks, try to increase the go_to_work_btn threshold')
+            logger('⚠️ คลิกเยอะกินไป, กรุณาไปเพิ่มค่าใน go_to_work_btn threshold')
             return
         #cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
     return len(not_working_green_bars)
@@ -307,7 +325,7 @@ def clickFullBarButtons():
             not_working_full_bars.append(bar)
 
     if len(not_working_full_bars) > 0:
-        logger('👆 Clicking in %d heroes' % len(not_working_full_bars))
+        logger('👆 กำลังคลิก %d ฮีโร่' % len(not_working_full_bars))
 
     for (x, y, w, h) in not_working_full_bars:
         moveToWithRandomness(x+offset+(w/2),y+(h/2),1)
@@ -322,12 +340,12 @@ def goToHeroes():
         global login_attempts
         login_attempts = 0
 
-    solveCaptcha(pause)
+    # solveCaptcha(pause)
     #TODO tirar o sleep quando colocar o pulling
     time.sleep(1)
     clickBtn(images['hero-icon'])
     time.sleep(1)
-    solveCaptcha(pause)
+    # solveCaptcha(pause)
 
 def goToGame():
     # in case of server overload popup
@@ -336,10 +354,11 @@ def goToGame():
     clickBtn(images['x'])
 
     clickBtn(images['treasure-hunt-icon'])
+    sendStashToDiscord()
 
 def refreshHeroesPositions():
 
-    logger('🔃 Refreshing Heroes Positions')
+    logger('🔃 Refreshing ตำแหน่งฮีโร่')
     clickBtn(images['go-back-arrow'])
     clickBtn(images['treasure-hunt-icon'])
 
@@ -348,17 +367,21 @@ def refreshHeroesPositions():
 
 def login():
     global login_attempts
-    logger('😿 Checking if game has disconnected')
+    logger('😿 เช็คสถานะการเชื่อมต่อของเกม')
 
     if login_attempts > 3:
         logger('🔃 Too many login attempts, refreshing')
+        webhook = discord.Webhook.from_url(c["discord_webhook"], adapter=discord.RequestsWebhookAdapter())
+        webhook.send("😢 หลุดนะจ๊ะ Too many login attempts")
         login_attempts = 0
         pyautogui.hotkey('ctrl','f5')
         return
 
     if clickBtn(images['connect-wallet'], name='connectWalletBtn', timeout = 10):
-        logger('🎉 Connect wallet button detected, logging in!')
-        solveCaptcha(pause)
+        logger('🎉 พบปุ่ม Connect wallet , logging in!')
+        webhook = discord.Webhook.from_url(c["discord_webhook"], adapter=discord.RequestsWebhookAdapter())
+        webhook.send("😢 หลุดนะจ๊ะ Connect wallet")
+        # solveCaptcha(pause)
         login_attempts = login_attempts + 1
         #TODO mto ele da erro e poco o botao n abre
         # time.sleep(10)
@@ -370,6 +393,8 @@ def login():
         # print('{} login attempt'.format(login_attempts))
         if clickBtn(images['treasure-hunt-icon'], name='teasureHunt', timeout = 15):
             # print('sucessfully login, treasure hunt btn clicked')
+            webhook = discord.Webhook.from_url(c["discord_webhook"], adapter=discord.RequestsWebhookAdapter())
+            webhook.send("😊 เข้าใหม่ให้แล้ว")
             login_attempts = 0
         return
         # click ok button
@@ -392,6 +417,8 @@ def login():
         # time.sleep(25)
         if clickBtn(images['treasure-hunt-icon'], name='teasureHunt', timeout=25):
             # print('sucessfully login, treasure hunt btn clicked')
+            webhook = discord.Webhook.from_url(c["discord_webhook"], adapter=discord.RequestsWebhookAdapter())
+            webhook.send("😊 เข้าใหม่ให้แล้ว")
             login_attempts = 0
         # time.sleep(15)
 
@@ -415,9 +442,9 @@ def sendHeroesHome():
 
     n = len(heroes_positions)
     if n == 0:
-        print('No heroes that should be sent home found.')
+        print('ไม่พบฮีโร่ที่ควรส่งไปบ้าน.')
         return
-    print(' %d heroes that should be sent home found' % n)
+    print('พบ %d ฮีโร่ควรส่งไปบ้าน ' % n)
     # if send-home button exists, the hero is not home
     go_home_buttons = positions(images['send-home'], threshold=ch['home_button_threshold'])
     # TODO pass it as an argument for both this and the other function that uses it
@@ -427,48 +454,49 @@ def sendHeroesHome():
         if not isHome(position,go_home_buttons):
             print(isWorking(position, go_work_buttons))
             if(not isWorking(position, go_work_buttons)):
-                print ('hero not working, sending him home')
+                print ('ฮีโร่ไม่ทำงาน, กำลังส่งไปที่บ้าน')
                 moveToWithRandomness(go_home_buttons[0][0]+go_home_buttons[0][2]/2,position[1]+position[3]/2,1)
                 pyautogui.click()
             else:
-                print ('hero working, not sending him home(no dark work button)')
+                print ('ฮีโร่กำลังทำงาน, ยกเลิกส่งไปที่บ้าน(no dark work button)')
         else:
-            print('hero already home, or home full(no dark home button)')
+            print('ฮีโร่อยู่บ้านแล้ว, หรือบ้านเต็ม(no dark home button)')
 
 
 
 
 
 def refreshHeroes():
-    logger('🏢 Search for heroes to work')
+    logger('🏢 ค้นหาฮีโร่ที่จะพาไปทำงาน')
 
     goToHeroes()
 
     if c['select_heroes_mode'] == "full":
-        logger('⚒️ Sending heroes with full stamina bar to work', 'green')
+        logger('⚒️ กำลังส่งฮีโร่ที่สเตมิน่าเต็มไปทำงาน', 'green')
     elif c['select_heroes_mode'] == "green":
-        logger('⚒️ Sending heroes with green stamina bar to work', 'green')
+        logger('⚒️ กำลังส่งฮีโร่ที่สเตมิน่าเขียวไปทำงาน', 'green')
     else:
-        logger('⚒️ Sending all heroes to work', 'green')
+        logger('⚒️ ส่งฮีโร่ทุกคนไปทำงาน', 'green')
 
     buttonsClicked = 1
     empty_scrolls_attempts = c['scroll_attemps']
 
-    while(empty_scrolls_attempts >0):
-        if c['select_heroes_mode'] == 'full':
-            buttonsClicked = clickFullBarButtons()
-        elif c['select_heroes_mode'] == 'green':
-            buttonsClicked = clickGreenBarButtons()
-        else:
-            buttonsClicked = clickButtons()
 
-        sendHeroesHome()
+    # while(empty_scrolls_attempts >0):
+    #     if c['select_heroes_mode'] == 'full':
+    #         buttonsClicked = clickFullBarButtons()
+    #     elif c['select_heroes_mode'] == 'green':
+    #         buttonsClicked = clickGreenBarButtons()
+    #     else:
+    #         buttonsClicked = clickButtons()
+    # while(empty_scrolls_attempts >0):
+    buttonsClicked = clickButtons()
 
-        if buttonsClicked == 0:
-            empty_scrolls_attempts = empty_scrolls_attempts - 1
-        scroll()
+    sendHeroesHome()
+ 
+    if buttonsClicked == 0:
         time.sleep(2)
-    logger('💪 {} heroes sent to work'.format(hero_clicks))
+    logger('💪 สู้เขาลูกพ่อ!'.format(hero_clicks))
     goToGame()
 
 
@@ -489,7 +517,7 @@ def main():
 
         if now - last["check_for_captcha"] > addRandomness(t['check_for_captcha'] * 60):
             last["check_for_captcha"] = now
-            solveCaptcha(pause)
+            # solveCaptcha(pause)
 
         if now - last["heroes"] > addRandomness(t['send_heroes_for_work'] * 60):
             last["heroes"] = now
@@ -508,7 +536,7 @@ def main():
 
 
         if now - last["refresh_heroes"] > addRandomness( t['refresh_heroes_positions'] * 60):
-            solveCaptcha(pause)
+            # solveCaptcha(pause)
             last["refresh_heroes"] = now
             refreshHeroesPositions()
 

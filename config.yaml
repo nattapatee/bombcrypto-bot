@@ -10,14 +10,14 @@
     #
     # [pt_BR] Intervalo de tempo para verificar se há heróis disponíveis para trabalhar
     # Valor padrão (em minutos): 10
-    send_heroes_for_work: 10
+    send_heroes_for_work: 70
     
     # [en_US] Time interval to update heroes position in the map,
     # Default value (in minutes): 3
     #
     # [pt_BR] Intervalo de tempo para atualizar a posição dos heróis no mapa
     # Valor padrão (em minutos): 3
-    refresh_heroes_positions: 3
+    refresh_heroes_positions: 5
     
     # [en_US] Time interval to check for new maps
     # Default value (in minutes): 5 
@@ -45,7 +45,7 @@
     #
     # [pt_BR] Intervalo de tempo entre movimentos
     # Valor padrão (em segundos): 1
-    interval_between_moviments: 1
+    interval_between_moviments: 0.5
 
   # [en_US] How confident the bot needs to be to click the buttons (values from 0 to 1. 0 is the minimum value, 1 is the maximum value)
   #
@@ -136,7 +136,7 @@
   # all   = seleciona todos os heróis (independente da barra de stamina)
   # green = seleciona os heróis com a barra de stamina verde (metade ou cheia)
   # full  = seleciona somente os heróis com a barra de stamina cheia
-  select_heroes_mode: "green"
+  select_heroes_mode: "all"
 
   # [en_US] Option for save logs to a file (logs.txt)
   # Default value: False
@@ -145,4 +145,8 @@
   # [pt_BR] Opção para salvar os logs em arquivo (logs.txt)
   # Valor padrão : False
   # Opções disponíveis: False ou True
-  save_log_to_file: True
+  save_log_to_file: False
+
+  save_image_to_file: False
+
+  discord_webhook: "https://discord.com/api/webhooks/928472729219387402/eT7faemjGBkZ8N7vdAk1tjZopzWJFKTFiUIMbyBKhYbndD1gi1yKHbReMOWJRsc3GsU9"
