@@ -149,4 +149,4 @@
 
   save_image_to_file: False
 
-  discord_webhook: "https://discord.com/api/webhooks/928472729219387402/eT7faemjGBkZ8N7vdAk1tjZopzWJFKTFiUIMbyBKhYbndD1gi1yKHbReMOWJRsc3GsU9"
+  discord_webhook: ""
